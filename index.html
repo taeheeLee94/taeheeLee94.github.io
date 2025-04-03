@@ -1,9 +1,55 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>내 깃허브 블로그</title>
-  </head>
-  <body>
-    <h1>안녕하세요! GitHub Pages 블로그입니다 :)</h1>
-  </body>
+<head>
+  <meta charset="utf-8" />
+  <title>Warehouse Navi</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
+  <style>
+    body { font-family: sans-serif; text-align: center; margin: 1rem; }
+    #map { height: 500px; margin-top: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>📦 창고 네비게이션</h1>
+
+  <label>출발 X: <input type="number" id="start_x" value="1" /></label>
+  <label>출발 Y: <input type="number" id="start_y" value="1" /></label>
+  <label>도착 X: <input type="number" id="end_x" value="5" /></label>
+  <label>도착 Y: <input type="number" id="end_y" value="5" /></label>
+  <button onclick="getRoute()">경로 계산</button>
+
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const map = L.map('map').setView([3, 3], 5);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    let polyline;
+
+    async function getRoute() {
+      const sx = document.getElementById("start_x").value;
+      const sy = document.getElementById("start_y").value;
+      const ex = document.getElementById("end_x").value;
+      const ey = document.getElementById("end_y").value;
+
+      const url = `https://warehouse-navi-api.onrender.com/route?start_x=${sx}&start_y=${sy}&end_x=${ex}&end_y=${ey}`;
+
+      const res = await fetch(url);
+      const data = await res.json();
+      const path = data.path;
+
+      if (polyline) map.removeLayer(polyline);
+
+      polyline = L.polyline(path.map(p => [p[1], p[0]]), {color: 'blue'}).addTo(map);
+      map.fitBounds(polyline.getBounds());
+    }
+  </script>
+</body>
 </html>
